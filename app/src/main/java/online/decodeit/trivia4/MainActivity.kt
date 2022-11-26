@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import online.decodeit.trivia4.screens.QuestionsViewModel
+import online.decodeit.trivia4.screens.TriviaHome
 import online.decodeit.trivia4.ui.theme.Trivia4Theme
 
 /**
@@ -40,22 +41,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun TriviaHome(viewModel: QuestionsViewModel = hiltViewModel()) {
-    Questions(viewModel = viewModel)
-}
 
-@Composable
-fun Questions(viewModel: QuestionsViewModel) {
-    val questions = viewModel.data.value.data?.toMutableList()
-    if (viewModel.data.value.loading == true)
-        Text(text = "LOADING")
-    else {
-        questions?.forEach{
-            Log.d("Result", "Questions: ${it.question}")
-        }
-    }
-}
+
+
 
 @Preview(showBackground = true)
 @Composable
