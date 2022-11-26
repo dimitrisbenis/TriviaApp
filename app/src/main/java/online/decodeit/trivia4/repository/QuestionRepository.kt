@@ -4,6 +4,7 @@ import android.util.Log
 import online.decodeit.trivia4.data.DataOrException
 import online.decodeit.trivia4.model.QuestionItem
 import online.decodeit.trivia4.network.QuestionAPI
+import online.decodeit.trivia4.utilities.Constants.CATEGORIES
 import javax.inject.Inject
 
 class QuestionRepository @Inject constructor( private val api: QuestionAPI) {
@@ -16,7 +17,7 @@ class QuestionRepository @Inject constructor( private val api: QuestionAPI) {
             Boolean, Exception> {
         try {
             listOfQuestions.loading = true
-            listOfQuestions.data = api.getQuestions()
+            listOfQuestions.data = api.getQuestions(max = 5, category = CATEGORIES["Science"].toString(), "medium")
 
             if (listOfQuestions.data.toString().isNotEmpty())
                 listOfQuestions.loading = false
