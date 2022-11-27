@@ -1,20 +1,19 @@
 package online.decodeit.trivia4.components
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -31,17 +30,39 @@ import online.decodeit.trivia4.ui.theme.Trivia4Theme
 @Composable
 fun Questions(viewModel: QuestionsViewModel) {
     val questions = viewModel.data.value.data?.toMutableList()
-    if (viewModel.data.value.loading == true)
+
+    val questionIndex = remember {
+        mutableStateOf<Int>(0)
+    }
+
+    val receivedQuestions = remember {
+        mutableStateOf<Int>(0)
+    }
+
+    val context = LocalContext.current
+
+    if (viewModel.data.value.loading == true) {
         CircularProgressIndicator()
-    else {
-        questions?.forEach{
-            Log.d("Result", "Questions: ${it.correctAnswer}")
+    } else {
+        val question = try {
+            questions?.get(questionIndex.value)
+        } catch (ex: Exception) {
+            Log.d("Exception", "Questions: No question!!!!! ${ex.localizedMessage}")
+        }
+        if(questions != null) {
+            receivedQuestions.value = questions.size
             QuestionDisplay(
-                question = it,
-                //questionIndex = 1,
+                question = question as QuestionItem,
+                questionIndex = questionIndex,
                 viewModel = viewModel,
-                onNextClicked = {}
-            )
+            ){
+                if (questionIndex.value + 1 < receivedQuestions.value) {
+                    questionIndex.value += 1
+                } else {
+                    Toast.makeText(context, "Round Finished", Toast.LENGTH_LONG).show()
+                    questionIndex.value = 0
+                }
+            }
         }
     }
 }
@@ -50,7 +71,7 @@ fun Questions(viewModel: QuestionsViewModel) {
 @Composable
 fun QuestionDisplay(
     question: QuestionItem,
-    //questionIndex: MutableState<Int>,
+    questionIndex: MutableState<Int>,
     viewModel: QuestionsViewModel,
     onNextClicked: (Int) -> Unit
 ) {
@@ -81,8 +102,7 @@ fun QuestionDisplay(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight()
-                .padding(4.dp),
+                .fillMaxHeight(),
             color = MaterialTheme.colors.background
         ) {
             Column(
@@ -90,7 +110,7 @@ fun QuestionDisplay(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                QuestionTracker()
+                QuestionTracker(counter = questionIndex.value + 1)
                 Divider(
                     modifier = Modifier.padding(20.dp),
                     color = MaterialTheme.colors.secondaryVariant
@@ -99,8 +119,10 @@ fun QuestionDisplay(
                 Column{
                     Text(
                         text = question.question,
-                        modifier = Modifier.align(alignment = Alignment.Start)
-                            .padding(20.dp).fillMaxHeight(0.5f),
+                        modifier = Modifier
+                            .align(alignment = Alignment.Start)
+                            .padding(20.dp)
+                            .fillMaxHeight(0.5f),
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
                     lineHeight = 22.sp,
@@ -143,11 +165,39 @@ fun QuestionDisplay(
                                             Color.Red.copy(alpha = 0.5f)
                                 )
                             )
+                            val annotatedString = buildAnnotatedString {
+                                withStyle(style = SpanStyle(
+                                    fontWeight = FontWeight.Light,
+                                    fontSize = 17.sp,
+                                    color = if (correctAnswerState.value == true && index == answered.value) {
+                                        Color.Green.copy(0.5f)
+                                    } else if (correctAnswerState.value == false && index == answered.value) {
+                                            Color.Red.copy(0.5f)
+                                    } else {
+                                            MaterialTheme.colors.secondaryVariant
+                                    }
+                                )){
+                                    append(answer)
+                                }
+                            }
                             Text(
-                                text = answer,
-                                color = MaterialTheme.colors.secondaryVariant
+                                text = annotatedString
                             )
                         }
+                    }
+                    Button(
+                        onClick = { onNextClicked(questionIndex.value)
+                                  correctAnswerState.value = null
+                                  answered.value = null
+                                  },
+                        shape = RoundedCornerShape(34.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = MaterialTheme.colors.secondaryVariant,
+                        ),
+                        modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+                            .padding(15.dp)
+                    ) {
+                        Text(text = "Next")
                     }
                 }
             }
