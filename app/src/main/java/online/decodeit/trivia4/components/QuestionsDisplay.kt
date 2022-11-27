@@ -19,7 +19,9 @@ fun QuestionDisplay(
     question: QuestionItem,
     questionIndex: MutableState<Int>,
     receivedQuestions: MutableState<Int>,
+    score: MutableState<Int>,
     viewModel: QuestionsViewModel,
+    updateScore: (Int) -> Unit,
     onNextClicked: (Int) -> Unit
 ) {
     val choicesState = remember(question) {
@@ -42,6 +44,8 @@ fun QuestionDisplay(
         {
             answered.value = it
             correctAnswerState.value = (choicesState[it] == question.correctAnswer)
+            if(correctAnswerState.value == true)
+                updateScore(score.value)
         }
     }
 
@@ -57,6 +61,11 @@ fun QuestionDisplay(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                ScoreTracker(
+                    answered = questionIndex.value + 1,
+                    total = receivedQuestions.value,
+                    score = score.value
+                )
                 QuestionTracker(
                     counter = questionIndex.value + 1,
                     outOf = receivedQuestions.value
@@ -93,7 +102,8 @@ fun QuestionDisplay(
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = MaterialTheme.colors.secondaryVariant,
                         ),
-                        modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+                        modifier = Modifier
+                            .align(alignment = Alignment.CenterHorizontally)
                             .padding(15.dp)
                     ) {
                         Text(text = "Next")

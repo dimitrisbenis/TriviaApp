@@ -20,6 +20,16 @@ fun Questions(viewModel: QuestionsViewModel) {
         mutableStateOf(0)
     }
 
+    var score = remember{
+        mutableStateOf(0)
+    }
+
+    val onScoreUpdate: (Int) -> Unit = remember(score) {
+        {
+           score.value += 1
+        }
+    }
+
     val context = LocalContext.current
 
     if (viewModel.data.value.loading == true) {
@@ -36,13 +46,16 @@ fun Questions(viewModel: QuestionsViewModel) {
                 question = question as QuestionItem,
                 questionIndex = questionIndex,
                 receivedQuestions,
+                score = score,
                 viewModel = viewModel,
+                updateScore = onScoreUpdate,
             ){
                 if (questionIndex.value + 1 < receivedQuestions.value) {
                     questionIndex.value += 1
                 } else {
                     Toast.makeText(context, "Round Finished", Toast.LENGTH_LONG).show()
                     questionIndex.value = 0
+                    score.value = 0
                 }
             }
         }

@@ -14,7 +14,10 @@ import androidx.compose.ui.unit.sp
 
 @Preview(showBackground = true)
 @Composable
-fun QuestionTracker(counter: Int = 0, outOf: Int = 0) {
+fun QuestionTracker(
+    counter: Int = 0,
+    outOf: Int = 0
+) {
     Text(text = buildAnnotatedString {
         withStyle(style = ParagraphStyle(textIndent = TextIndent.None)) {
             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold,
